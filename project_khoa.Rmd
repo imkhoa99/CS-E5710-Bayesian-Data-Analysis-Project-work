@@ -1,0 +1,430 @@
+---
+title: "CS-E5710 Bayesian Data Analysis - Project work"
+author: "Khoa Lai & Vinh Nguyen"
+date: "November 2020"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 1
+  html_document:
+    toc: yes
+    toc_depth: '1'
+    df_print: paged
+---
+
+```{r include=FALSE, results='hide'}
+set.seed(42)
+library(rstan)
+library(gridExtra)
+library(bayesplot)
+rstan_options(auto_write = TRUE)
+options(mc.cores = parallel::detectCores())
+rstan_options(auto_write = TRUE)
+```
+
+# 1. Introduction
+**Motivation**: $\\$
+- Breast cancer is one of the most common cancer in women around the world. According to American Cancer Society, about 1 in 8 US women will develop breast cancer in their life time. Furthermore, breast cancer is the second leading cause of cancer death in women. The death rate due to breast cancer in women younger than 50 have been steady since 2007. However, this rate for older women decreased by 1.3% per year from 2013 to 2017.
+- This shows the importance of early detection of breast cancer in protecting health of women. Early detection can help physicians and women themselves reduce the health risk and live a happier lives, not to mention that they can save money from cancer treatment.   
+
+**The problem**: $\\$ 
+- Medical screenings are usually done by one doctor, which could be prone to errors and bias. Assessment from multiple doctors usually yields more reliable diagnosis, but this could be impractical in some cases when there is a shortage of doctor with the desired skills and experience.    
+- A computer program for automatic diagnosis of breast cancer could provide a solution to that issue. By providing prediction from data collected from fine-needle aspirate of breast mass, such program can help doctors in finalizing their diagnosis and planning better treatments for their patients.   
+
+**Modeling idea**: $\\$
+- The problem is classifying fine-needle aspirate of breast mass as benign or malignant, which can be modeled as binary classification problem. In this study, Gaussian Naive Bayes Classifier and Logistic Regression will be employed for this task. These two models have been shown to be very effective in many cases, even with their simple architectures.  
+
+
+# 2. Data Description and Problem Analysis
+The dataset, namely $\href{https://archive.ics.uci.edu/ml/datasets/Breast+Cancer+Wisconsin+(Diagnostic)}{Breast \space Cancer \space Wisconsin \space (Diagnostic)}$, is obtained through the UCI Machine Learning Repository. According to the source, features are computed from a digitized image of a find needle aspirate (FNA) of a breast mass. They describe characteristics of the cell nuclei present in the image. 
+
+There are 10 real-valued features that are computed for each cell nucleus: $\\$
+a) radius (mean of distances from center to points on the perimeter) $\\$
+b) texture (standard deviation of gray-scale values) $\\$
+c) perimeter $\\$
+d) area $\\$
+e) smoothness (local variation in radius lengths) $\\$
+f) compactness (perimeter^2 / area - 1.0) $\\$
+g) concavity (severity of concave portions of the contour) $\\$
+h) concave points (number of concave portions of the contour) $\\$
+i) symmetry $\\$
+j) fractal dimension ("coastline approximation" - 1)
+
+The target variable is to predict whether a person having breast cancer given the attributes. (0: not cancer, 1: cancer).
+
+The data consists of binary observations $y_n$ $\in$ {0,1} paired with 30-dimensional vectors of predictors $x_n$ for n $\in$ 1:N.
+
+Obtaining the dataset in suitable form requires some pre-processing steps, and here we drop the ID column from the original dataset as it does not attribute to the final result. 
+
+Since the features in the data originally are not in the same scale, we would standardize the data so that for every column k corresponding to a predictor, we have: $\\$
+\begin{center}
+mean($x_{1:N,k}$ = 0)
+\end{center}
+
+and 
+
+\begin{center}
+sd($x_{1:N,k}$ = 1)
+\end{center}
+
+For the purposes of simulation, we would assume the data have a multivariate normal distribution with a positive-definite covariance matrix $\sum$, $\\$
+\begin{center}
+$x_n$ $\sim$ multinormal(0, $\sum$)
+\end{center}
+
+Since the dataset is public, there has been several case studies and use of the dataset since it was published on 1995. The authors did not try to find any specific case studies / project that involves the same dataset to compare against, and we would conduct the experiment independently for that reason. 
+
+
+# 3. Model Description
+In this project, we would use Logistic Regression and Gaussian Naive Bayes Classifier to classify / predict whether a person having a breast cancer given the measurements from the image. 
+
+## Logistic Regression
+The model is parameterized with an intercept $\alpha$ $\in$ $\mathbb{R}$ and coefficient vector $\beta$ $\in$ $\mathbb{R}^K$. Logistic regression is a generalized linear model where the linear predictor is defined as: 
+
+\begin{center}
+$\alpha \space + \space x_n\beta \space = \space \alpha \space + \sum_{k=1}^{K} x_{n,k} * \beta_k$
+\end{center} $\\$
+represents the log odds of $y_n$ being equal to one.
+
+Given the log odds, the probability that $y_n$ is one is given by inverting the log odds function: 
+
+\begin{center}
+Pr[$y_n = 1$] = $logit^{-1} (\alpha \space + \space x_n\beta)$
+\end{center}
+
+The sampling distribution is then defined to follow the log odds:
+
+\begin{center}
+$y_n \sim bernoulli(logit^{-1}(\alpha \space + x_n\beta))$
+\end{center} 
+
+for observations indexed by n $\in$ 1:N. It is important to note that the $y_n$ are defined by sampling according to the log odds.
+
+**Loss Functions for Evaluating predictions** $\\$
+Our goal is to provide predictive estimates of the probability that an unobserved outcome $\tilde{y}_{n}$ takes valuee 1, given predictors $\tilde{x}_n$ and training data (x,y). In mathematical notation, we want to estimate
+
+\begin{center}
+Pr[$\tilde{y}_n = 1 | \tilde{x}_n,x,y$]
+\end{center}
+
+We will consider 2 scoring functions (log loss and square loss) for evaluating the accuracy of the model.
+
+**Log loss:** $\\$
+It is the log probability(density or mass) of the true result under the model. For a given target $y_n$ and probabilistic prediction $\hat{y}_n$, the log loss is defined by
+
+\begin{center}
+Log Loss = $\sum_{(x,y) \in D} -ylog(y') - (1-y)log(1-y')$
+\end{center}
+
+where: $\\$
+- (x,y) $\in$ D is the dataset containing many labeled examples, which are (x,y) pairs. $\\$
+- y is the label in a labeled example. Since this is logistic regression, every value of y must either be 0 or 1. $\\$
+- y' is the predicted value (somewhere between 0 and 1), given the set of features in x.
+
+**Square error:** $\\$
+It is a loss function that can be used in the learning setting in which we are
+predicting a real-valued variable y given an input variable x.
+
+\begin{center}
+Square Loss $(y_n, \hat{y}_n)$ = $(y_n - \hat{y}_n)^2$.
+\end{center}
+
+Given the entire test set, the loss can be expressed as:
+
+\begin{center}
+Square Loss $(y, \hat{y})$ = $\sum_{n=1}^{\hat{N}}(y_n - \hat{y}_n)^2$
+\end{center}
+
+## Load and pre-process the data
+```{r}
+breast_data <- read.csv("wdbc.data")
+
+# Split the data into training and testing set. Use 50% for training and 50% for testing
+training_size = round(0.5 * nrow(breast_data),0)
+tr_idx = sample(nrow(breast_data), training_size)
+training_data = breast_data[tr_idx,] 
+testing_data = breast_data[-tr_idx,]
+
+# Convert the target (originally categorical) into numerical variable
+y_train = as.numeric(factor(training_data$M))
+y_test = as.numeric(factor(testing_data$M))
+
+# Subtract both the target label by 1. 
+# Since in R, index starts from 1 and for the logistic regression, the label needs
+# to be within the interval [0,1]
+y_train = y_train - 1
+y_test = y_test - 1
+
+# Remove the target and ID column from the training and testing set
+x_train = subset(training_data, select=-c(X842302, M))
+x_test = subset(testing_data, select=-c(X842302, M))
+
+# Standardize the data
+scaled_training = scale(x_train)
+df_train = as.data.frame(scaled_training)
+scaled_testing = scale(x_test)
+df_test = as.data.frame(scaled_testing)
+
+# Prepare the data
+data <- list(N = nrow(df_train), J = ncol(df_train), x = df_train, y = y_train, 
+             N_test = nrow(df_test), K = ncol(df_test), x_test = df_test, 
+             y_test = y_test)
+```
+
+
+## Run the model
+```{r echo=T, results='hide'}
+# Fit the model with 100 iterations
+fit_logistic_regression = stan(file = "logistic_regression.stan", data = data, iter = 100)
+```
+
+```{r echo=T, results='hide'}
+# Fit the model with 2000 iterations
+fit_logistic_regression_2000 = stan(file = "logistic_regression.stan", data = data, iter = 2000)
+```
+
+
+## Gaussian Naive Bayes Classifier:   
+- Naive Bayes Classifier (NBC) is one of the simplest probabilistic classifier. NBC is build upon Bayes's theorem can be expressed as:
+$$ C_{predict} = argmax_kP(C_k|x_1...x_n) = argmax_k\frac{P(C_k).P(x_1...x_n|C_k)}{P(x_1...x_n)} $$
+where $C_k$ is a class of $k$ classes, and $x = (x_1...x_n)$ is an instance with n feature variables.     
+- We know that the normalization term in the denominator is constant for each individual sample, wew can eliminate them to simplify the problem. For further simplification, we make a strong assumption that all the variable are mutually independence, so that the likelihood becomes the product of the conditional probability of individual variable on the class (which is usually true in practice, inducing the name "naive"). Finally, we can compute the logarithm of the numerator to avoid numerical underflow. With all of these justifications, the classification rule becomes:     
+$$ 
+\begin{aligned}
+C_{predict} &= argmax_kP(C_k).P(x_1...x_n|C_k) \\ 
+            &= argmax_kP(C_k).\prod_{i=1}^{n}P(x_i|C_k) \\
+            &= argmax_k(\log{P(C_k)}+\sum_{i=1}^{n}\log{P(x_i|C_k)})
+\end{aligned}
+$$
+- Because the breast cancer dataset contains only numerical data, Gaussian Naive Bayes Classifier (GNBC) variant of NBC can be applied to the problem. In GNBC, the likelihood distribution are assumed to be Gaussian distribution. Beside, as this is a binary classification problem, the prior distribution can be modeled as a Bernoulli distribution. In this analysis, these distribution will be approximated using Stan.     
+
+```{r include=FALSE}
+# Load data:
+breast <- read.csv("./wdbc.data", header = FALSE)
+
+# Split data into train and test datasets:
+train_index <- sample(1:nrow(breast), 0.5 * nrow(breast))
+test_index <- setdiff(1:nrow(breast), train_index)
+breast_train <- breast[train_index, ]
+breast_test <- breast[test_index, ]
+
+# Prepare data:
+benign <- breast_train[breast_train$V2 == "B", ][, 3:32]
+malign <- breast_train[breast_train$V2 == "M", ][, 3:32]
+data <- list(
+  J = ncol(benign),
+  N = nrow(breast_train),
+  N_test = nrow(breast_test),
+  N_benign = nrow(benign),
+  N_malign = nrow(malign),
+  target_train = as.integer(breast_train[, 2]) - 1,
+  target_test = as.integer(breast_test[, 2]) - 1,
+  benign = benign,
+  malign = malign,
+  test = breast_test[, 3:32]
+)
+
+# Fit model:
+fit <- stan(file = "gauss_naive_bayes.stan", data = data, seed = 42)
+```
+
+# 4. Prior justification
+## Logistic Regression
+Given the logistic scale and standardized predictors, we assume weakly informative priors, 
+
+\begin{center}
+$\alpha, \beta_k \sim normal(0,2)$,
+\end{center} $\\$
+for k $\in$ 1:K.
+
+## Gaussian Naive Bayes Classifier
+- Because the prior distribution in the GNBC is modeled as Bernoulli distribution, $Beta(10, 10)$ prior was applied for the $\theta$ parameter of the prior distribution of GNBC.   
+- Priors for the parameters of the Gaussian likelihood distribution of each individual variables can be done. However, regarding the implementation aspect, manually specifying priors for all of the parameters given that these variables are on different scale can be tedious. Therefore, a common weekly informative prior $N(20, 100)$ for all variable is used.  
+
+
+# 5. Stan code
+Here's a Stan program implementing the logistic regression model:
+```{r}
+writeLines(readLines("logistic_regression.stan"))
+```
+
+The program includes not only the data and model declaration, but also the predictive distributions for square error and log loss. The true values of the test cases are provided to the program, but they are not used during training.
+
+Here's a Stan program implementing the logistic regression model:
+```{r}
+writeLines(readLines("gauss_naive_bayes.stan"))
+```
+
+
+# 6. Explanation on how the Stan code was run 
+Both models were run with 4 chains, first with 100 iterations and then increased to 2000 iterations.
+
+```{r echo=T, results='hide'}
+# Evaluate the output after fitting
+fit_logistic_regression_2000
+```
+
+The output from Stan produces the mean, standard error mean, standard deviation and the central posterior interval for parameter values $\alpha^{m}, \space \beta^{m}$, drawn from the posterior. With only ‘rN‘ training examples with correlated parameters, there is a great deal of uncertainty in the posteriors for coefficients and hence for predictions and for
+loss versus the test set.
+
+## Logistic Regression
+### **Explanation on the Stan code:** 
+There are 4 components attributing to the Stan model:
+
+**- Data:** $\\$
+K: the number of observations in the training set $\\$
+N: the number of columns in the training set $\\$
+x: the training dataset, in matrix format $\\$
+y: the training target 
+
+**- Parameters:** $\\$
+alpha: The intercept $\\$
+beta: The weight of all features
+
+**- Model:** $\\$
+alpha $\sim$ normal(0,2) $\\$
+beta $\sim$ normal(0,2)
+
+
+
+# 7. Convergence Diagnostics
+## Logistic Regression
+```{r}
+# Extract the R_hat column for 100 iterations
+r_hat_100 = summary(fit_logistic_regression)$summary[,10]
+hist(r_hat_100, main = "Histogram of R_hat with 100 iterations", 
+     xlab = "R_hat", col = "red")
+
+# Extract the n_eff column for 100 iterations
+n_eff_100 = summary(fit_logistic_regression)$summary[,9]
+# Plot the histogram of n_eff
+hist(n_eff_100, main = "Histogram of n_eff with 100 iterations", 
+     xlab = "Effective sample size", col = "aquamarine")
+```
+
+```{r}
+# Extract the R_hat column for 2000 iterations
+r_hat_2000 = summary(fit_logistic_regression_2000)$summary[,10]
+hist(r_hat_2000, main = "Histogram of R_hat with 2000 iterations", 
+     xlab = "R_hat", col = "burlywood")
+```
+
+```{r}
+# Extract the n_eff column for 2000 iterations
+n_eff_2000 = summary(fit_logistic_regression_2000)$summary[,9]
+
+# Plot the histogram of n_eff for 2000 iterations
+hist(n_eff_2000, main = "Histogram of n_eff with 2000 iterations", 
+     xlab = "Effective sample size", col = "darkmagenta")
+```
+
+**$\hat{R}$ diagnostic:** First, I tried running the model with 100 iterations, and evaluating the $\hat{R}$ produced in the summary of the model indicates that the chains are far from convergence. The $\hat{R}$ values for numerous $\beta$ are > 1, so therefore approximate convergence has not been reached. Then, I tried to increase the number of iterations to 1000, and checking the $\hat{R}$ value indicates that both of the $\hat{R}$ for $\alpha \space and \space \beta$ are $\approx$ 1, which shows that the chains have converged and the draws from posterior distribution follow the same distribution of the real data.
+
+**The Effective Sample Size (ESS):** The Effective Sample Size (ESS) of a parameter sampled from an MCMC is the number of effectively independent draws from the posterior distribution that the Markov chain is equivalent to. From the histogram above, we see that with 2000 iterations, the effective sample size for most of the parameter ranging from 1500 to 5000, with its peak is within the [3500, 4500] interval, which is quite small compared to the total sample size of 8000 data points. In addition, due to the definition of the effective sample size, these sample size are independent of each other. 
+
+## Gaussian Naive Bayes Classifier:    
+```{r}
+# Get the summary of Rhat and n_eff:
+s <- as.data.frame(summary(fit)$summary[1:121, ])
+rhat <- s$Rhat
+n_eff <- s$n_eff
+# Plot histogram of Rhat:
+hist(rhat, main = "Rhat (Convergence)")
+# Plot histogram of n_eff:
+hist(n_eff, main = "N_eff (Efficiency)")
+```
+- From the above plot, most of the $\hat{R}$ are close very close to 1, meaning that the simulation chains converged to the target distribution, and futher simulation will not improve the between-within variance of MCMC chains.      
+- As shown from the histogram of number of effective sample size, most of the $N_{eff}$ are larger than the actual sample size $N = 4000$. This means that the posterior draws in the chains are approximately independent of each other, which also indicates convergence in the simulation.    
+
+
+# 8. Posterior predictive checking
+## Logistic Regression
+```{r}
+# Extract the y_pred from the model
+y_pred = round(extract(fit_logistic_regression_2000)$E_y_test[284,],0)
+
+par(mfrow=c(1,2))
+
+# Plot the histogram of the predicted label
+hist(y_pred, col = "khaki1")
+
+# Plot the histogram of the real label
+hist(y_test, col = "khaki1")
+```
+Above are 2 histograms that show the frequency of both labels 0 and 1 for the testing data. 
+The first histogram is obtained through feeding the testing data into the logistic regression model and using the learned parameter of the model to get the predicted label. The second histogram is the frequency of the labels of the real testing data.
+
+From the graph above, we see that the distribution of the predicted label is roughly the same as the distribution for the true label of the test data. The graph shows that it is likely that the model has learned the distribution of the data through the training, and indicates that we might have already obtained a good model. However, more tests / evaluation methods would be made in the next part in order to evaluate whether the parameter is sufficiently fit before coming to conclusion. 
+
+## Gaussian Naive Bayes Classifier:    
+```{r}
+# Get all parameters:
+J <- ncol(benign)
+posterior_mean <- get_posterior_mean(fit)
+mu_benign <- posterior_mean[1:J, 5]
+sigma_benign <- posterior_mean[(J+1):(2*J), 5]
+mu_malign <- posterior_mean[(2*J+1):(3*J), 5]
+sigma_malign <- posterior_mean[(3*J+1):(4*J), 5]
+theta <- posterior_mean[121, 5]
+
+# Define some helper function:
+ppc_benign <- function(j) {
+  ppc_dens_overlay(benign[, j], matrix(rnorm(100*nrow(benign), mu_benign[j], sigma_benign[j]), ncol=nrow(benign)))
+}
+ppc_malign <- function(j) {
+  ppc_dens_overlay(malign[, j], matrix(rnorm(100*nrow(malign), mu_malign[j], sigma_malign[j]), ncol=nrow(malign)))
+}
+# Graphical posterior predictive check:
+grid.arrange(grobs=lapply(1:12, ppc_benign), nrow=3)
+grid.arrange(grobs=lapply(1:12, ppc_malign), nrow=3)
+```
+- Regarding the display issue, only a subset of posterior distribution are shown for posterior predictive check, but the same analysis applies for the others.    
+- As shown from the plot, almost all of the replicate distribution are similar to the target distribution, meaning that the model fit to the data quite well.  
+
+
+# 10. Predictive performance assessment 
+## Logistic Regression
+We will consider full Bayesian inference, where our estimate is derived from:
+
+\begin{center}
+p($\tilde{y}_n \space | \space \tilde{x}_n,x,y$) = $\int$ p($\tilde{y}_n \space | \tilde{x}_n,\alpha,\beta$) * p($\alpha, \beta \space | x,y $)d($\alpha, \beta$).
+\end{center}
+
+```{r}
+N_test = nrow(df_test)
+y_test_hat_bayes <- rep(0, N_test)
+
+# Extract the predicted label for the test set
+for (n in 1:N_test) {
+  y_test_hat_bayes[n] <- mean(extract(fit_logistic_regression_2000)$E_y_test[,n])
+}
+
+# Extract the log loss and square loss 
+log_loss = mean(extract(fit_logistic_regression_2000)$log_loss)
+square_loss = mean(extract(fit_logistic_regression_2000)$sq_loss)
+cat("Log loss:", round(log_loss,2), "Square loss:", round(square_loss,2))
+```
+
+## Gaussian Naive Bayes Classifier:     
+```{r}
+# Extract GNBC accuracy from the stan model:
+s <- as.data.frame(summary(fit)$summary)
+cat("Accuracy of the model on test dataset: ", s[nrow(s)-1,1], "%")
+```
+
+The GNBC achieve 91.5% predictive accuracy on test dataset containing half of the total samples. This is quite satisfactory performance given a simple model like GNBC. The performance could be improved if the dependency between variables is also taken into account. This definitely requires a more sophisticated model within the family of Bayesian classifier, which will be studied in future work.    
+
+# 12. Discussion of issues and potential improvements
+Regarding the issues, we had one issue that worth stating out. One problem we encountered was that at some points, we needed to revisit the lecture and material of the course in order to proceed with the project. That is to say, the amount of workload in the course is roughly huge, but on the bright side, it helped us to know which part that we were missing out, and after that finishing the project is an amazing moment. Regarding the potential improvements, if we were to start again the project, we would have started it sooner so that we had more time in planning the project accordingly. One part that we have missed is the Sensitivity Analysis. We thought that after finishing the model and analysis that we would conduct that part, but it turned out eventually that we were not able to do it due to other parts taking enormous amount of time. That would be one of the points to bear in mind when conducting a Bayesian-based project in future work is to plan better by starting early in order to account for the enormous time taken over by other Bayesian diagnostic methods.  
+
+
+# 13. Conclusion on what was learned from the data analysis
+During the project, we applied what we have learned in the course into practicality. Unlike the assignment in which the workflow has to be followed accordingly, in the project, it is necessary to understand the problem and the dataset thoroughly to plan the project and know which steps to proceed, which leads to saving a lot of time and effort. We understand how to conduct a project using real-world dataset using Bayesian approaches, and how to apply different diagnostic techniques for evaluating the goodness of the model. There was time that we were stuck and did not know how to continue, and then we knew which content / concept that we did not fully understand, and we revisited the material to grasp the good understanding in order to overcome the problems. 
+
+
+# 14. Self-reflection
+One point that we found it extremely helpful is the list of bullet points which suggests us on what to include in the report. We found that the previous bullet point leads to the next bullet point and so forth, and we would have spent quite significantly more time if it had not existed. It is to say that that list would not be within only the scope of the project, but we would use it as a skeleton if we would conduct a Bayesian-based project in the future. We think that during the course, there are a lot of concepts that were taught, and we believe that although the course is about to come to an end, the materials and resources would be definitely come into use in our future work as the concepts and what we have learned during the course are state-of-the-art and keep up to dated with what is expected from the work of Bayesian-based data analysis project.
+
+
+
+

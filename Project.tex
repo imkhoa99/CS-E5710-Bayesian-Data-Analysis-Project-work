@@ -1,0 +1,462 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={BDA - Assignment 8},
+  pdfauthor={Anonymous},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+
+\title{BDA - Assignment 8}
+\author{Anonymous}
+\date{}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{1}
+\tableofcontents
+}
+\hypertarget{introduction}{%
+\subsection{1. Introduction:}\label{introduction}}
+
+\hypertarget{motivation}{%
+\paragraph{Motivation:}\label{motivation}}
+
+\begin{itemize}
+\tightlist
+\item
+  Breast cancer is one of the most common cancer in women around the
+  world. According to American Cancer Society, about 1 in 8 US women
+  will develop breast cancer in their life time. Furthermore, breast
+  cancer is the second leading cause of cancer death in women. The death
+  rate due to breast cancer in women younger than 50 have been steady
+  since 2007. However, this rate for older women decreased by 1.3\% per
+  year from 2013 to 2017.
+\item
+  This shows the importance of early detection of breast cancer in
+  protecting health of women. Early detection can help physicians and
+  women themselves reduce the health risk and live a happier lives, not
+  to mention that they can save money from cancer treatment.\\
+  \#\#\#\# Problem:\\
+\item
+  Medical screenings are usually done by one doctor, which could be
+  prone to errors and bias. Assessment from multiple doctors usually
+  yields more reliable diagnosis, but this could be impractical in some
+  cases when there is a shortage of doctor with the desired skills and
+  experience.\\
+\item
+  A computer program for automatic diagnosis of breast cancer could
+  provide a solution to that issue. By providing prediction from data
+  collected from fine-needle aspirate of breast mass, such program can
+  help doctors in finalizing their diagnosis and planning better
+  treatments for their patients.
+\end{itemize}
+
+\hypertarget{modeling-idea}{%
+\paragraph{Modeling Idea:}\label{modeling-idea}}
+
+\begin{itemize}
+\tightlist
+\item
+  The problem is classifying fine-needle aspirate of breast mass as
+  benign or malignant, which can be modeled as binary classification
+  problem. In this study, Gaussian Naive Bayes Classifier and Logistic
+  Regression will be employed for this task. These two models have been
+  shown to be very effective in many cases, even with their simple
+  architectures.
+\end{itemize}
+
+\hypertarget{data-description}{%
+\subsection{2. Data Description:}\label{data-description}}
+
+\hypertarget{model-description}{%
+\subsection{3. Model Description:}\label{model-description}}
+
+\hypertarget{gaussian-naive-bayes-classifier}{%
+\paragraph{Gaussian Naive Bayes
+Classifier:}\label{gaussian-naive-bayes-classifier}}
+
+\begin{itemize}
+\tightlist
+\item
+  Naive Bayes Classifier (NBC) is one of the simplest probabilistic
+  classifier. NBC is build upon Bayes's theorem can be expressed as:
+  \[ C_{predict} = argmax_kP(C_k|x_1...x_n) = argmax_k\frac{P(C_k).P(x_1...x_n|C_k)}{P(x_1...x_n)} \]
+  where \(C_k\) is a class of \(k\) classes, and \(x = (x_1...x_n)\) is
+  an instance with n feature variables.\\
+\item
+  We know that the normalization term in the denominator is constant for
+  each individual sample, wew can eliminate them to simplify the
+  problem. For further simplification, we make a strong assumption that
+  all the variable are mutually independence, so that the likelihood
+  becomes the product of the conditional probability of individual
+  variable on the class (which is usually true in practice, inducing the
+  name ``naive''). Finally, we can compute the logarithm of the
+  numerator to avoid numerical underflow. With all of these
+  justifications, the classification rule becomes:\\
+  \[ \begin{equation} 
+  \begin{split}
+  C_{predict} &= argmax_kP(C_k).P(x_1...x_n|C_k) \\ 
+            &= argmax_kP(C_k).\prod_{i=1}^{n}P(x_i|C_k) \\
+            &= argmax_k(\log{P(C_k)}+\sum_{i=1}^{n}\log{P(x_i|C_k)})
+  \end{split} 
+  \end{equation} \]
+\item
+  Because the breast cancer dataset contains only numerical data,
+  Gaussian Naive Bayes Classifier (GNBC) variant of NBC can be applied
+  to the problem. In GNBC, the likelihood distribution are assumed to be
+  Gaussian distribution. Beside, as this is a binary classification
+  problem, the prior distribution can be modeled as a Bernoulli
+  distribution. In this analysis, these distribution will be
+  approximated using Stan.
+\end{itemize}
+
+\hypertarget{justification-of-prior-choice}{%
+\subsection{4. Justification of Prior
+Choice:}\label{justification-of-prior-choice}}
+
+\hypertarget{gaussian-naive-bayes-classifier-1}{%
+\paragraph{Gaussian Naive Bayes
+Classifier:}\label{gaussian-naive-bayes-classifier-1}}
+
+\begin{itemize}
+\tightlist
+\item
+  Because the prior distribution in the GNBC is modeled as Bernoulli
+  distribution, \(Beta(10, 10)\) prior was applied for the \(\theta\)
+  parameter of the prior distribution of GNBC.\\
+\item
+  Priors for the parameters of the Gaussian likelihood distribution of
+  each individual variables can be done. However, regarding the
+  implementation aspect, manually specifying priors for all of the
+  parameters given that these variables are on different scale can be
+  tedious. Therefore, a common weekly informative prior \(N(20, 100)\)
+  for all variable is used.
+\end{itemize}
+
+\hypertarget{stan-code}{%
+\subsection{5. Stan Code:}\label{stan-code}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\StringTok{"}
+\StringTok{data \{}
+\StringTok{  int\textless{}lower=0\textgreater{} J;                        // Number of feautures}
+\StringTok{  int\textless{}lower=0\textgreater{} N;                        // Number of instances}
+\StringTok{  int\textless{}lower=0\textgreater{} N\_test;                        // Number of test instances}
+\StringTok{  int\textless{}lower=0\textgreater{} N\_benign;                 // Number of benign instances}
+\StringTok{  int\textless{}lower=0\textgreater{} N\_malign;                 // Number of malign instances}
+\StringTok{  int\textless{}lower=0, upper=1\textgreater{} target\_train[N];        // Target}
+\StringTok{  int\textless{}lower=0, upper=1\textgreater{} target\_test[N\_test];        // Target}
+\StringTok{  vector[J] benign[N\_benign];            // Benign data}
+\StringTok{  vector[J] malign[N\_malign];            // Malignant data}
+\StringTok{  vector[J] test[N\_test];}
+\StringTok{  }
+\StringTok{\}}
+
+\StringTok{parameters \{}
+\StringTok{  // Benign Parameters:}
+\StringTok{  vector[J] mu\_benign;}
+\StringTok{  vector\textless{}lower=0\textgreater{}[J] sigma\_benign;}
+\StringTok{  // Malignant Parameters:}
+\StringTok{  vector[J] mu\_malign;}
+\StringTok{  vector\textless{}lower=0\textgreater{}[J] sigma\_malign;}
+\StringTok{  // Target Parameters:}
+\StringTok{  real\textless{}lower=0, upper=1\textgreater{} theta;}
+\StringTok{\}}
+
+\StringTok{model \{}
+\StringTok{  // Prior:}
+\StringTok{  theta \textasciitilde{} beta(10, 10);}
+\StringTok{  }
+\StringTok{  for (j in 1:J) \{}
+\StringTok{    mu\_benign[j] \textasciitilde{} normal(20, 100);}
+\StringTok{    sigma\_benign[j] \textasciitilde{} inv\_chi\_square(0.1);}
+\StringTok{    mu\_malign[j] \textasciitilde{} normal(20, 100);}
+\StringTok{    sigma\_malign[j] \textasciitilde{} inv\_chi\_square(0.1);}
+\StringTok{  \}}
+\StringTok{  }
+\StringTok{  // Likelihood:}
+\StringTok{  target\_train \textasciitilde{} bernoulli(theta);}
+\StringTok{  }
+\StringTok{  for (j in 1:J) \{}
+\StringTok{    benign[, j] \textasciitilde{} normal(mu\_benign[j], sigma\_benign[j]);}
+\StringTok{    malign[, j] \textasciitilde{} normal(mu\_malign[j], sigma\_malign[j]);}
+\StringTok{  \}}
+\StringTok{\}}
+
+\StringTok{generated quantities \{}
+\StringTok{  int\textless{}lower=0, upper=1\textgreater{} ypred[N\_test];}
+\StringTok{  real\textless{}lower=0, upper=100\textgreater{} accuracy = 0;}
+\StringTok{  }
+\StringTok{  \# Gaussian naive bayes classifier:}
+\StringTok{  for (i in 1:N\_test) \{}
+\StringTok{    \# Class prior}
+\StringTok{    real be = bernoulli\_lpmf(0 | 1 {-} theta);}
+\StringTok{    real ma = bernoulli\_lpmf(1 | theta);}
+\StringTok{    \# Data likelihood:}
+\StringTok{    for (j in 1:J) \{}
+\StringTok{      be += normal\_lpdf(test[i, j] | mu\_benign[j], sigma\_benign[j]);}
+\StringTok{      ma += normal\_lpdf(test[i, j] | mu\_malign[j], sigma\_malign[j]);}
+\StringTok{    \}}
+\StringTok{    \# Classification:}
+\StringTok{    if (ma \textgreater{}= be) \{}
+\StringTok{      ypred[i] = 1;}
+\StringTok{    \}}
+\StringTok{    else \{}
+\StringTok{      ypred[i] = 0;}
+\StringTok{    \}}
+\StringTok{    if (ypred[i] == target\_test[i]) \{}
+\StringTok{      accuracy += 1;}
+\StringTok{    \}}
+\StringTok{  \}}
+\StringTok{  \# Accuracy:}
+\StringTok{  accuracy = accuracy * 100.0 / N\_test;}
+\StringTok{\}}
+\StringTok{"}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "\ndata {\n  int<lower=0> J;                        // Number of feautures\n  int<lower=0> N;                        // Number of instances\n  int<lower=0> N_test;                        // Number of test instances\n  int<lower=0> N_benign;                 // Number of benign instances\n  int<lower=0> N_malign;                 // Number of malign instances\n  int<lower=0, upper=1> target_train[N];        // Target\n  int<lower=0, upper=1> target_test[N_test];        // Target\n  vector[J] benign[N_benign];            // Benign data\n  vector[J] malign[N_malign];            // Malignant data\n  vector[J] test[N_test];\n  \n}\n\nparameters {\n  // Benign Parameters:\n  vector[J] mu_benign;\n  vector<lower=0>[J] sigma_benign;\n  // Malignant Parameters:\n  vector[J] mu_malign;\n  vector<lower=0>[J] sigma_malign;\n  // Target Parameters:\n  real<lower=0, upper=1> theta;\n}\n\nmodel {\n  // Prior:\n  theta ~ beta(10, 10);\n  \n  for (j in 1:J) {\n    mu_benign[j] ~ normal(20, 100);\n    sigma_benign[j] ~ inv_chi_square(0.1);\n    mu_malign[j] ~ normal(20, 100);\n    sigma_malign[j] ~ inv_chi_square(0.1);\n  }\n  \n  // Likelihood:\n  target_train ~ bernoulli(theta);\n  \n  for (j in 1:J) {\n    benign[, j] ~ normal(mu_benign[j], sigma_benign[j]);\n    malign[, j] ~ normal(mu_malign[j], sigma_malign[j]);\n  }\n}\n\ngenerated quantities {\n  int<lower=0, upper=1> ypred[N_test];\n  real<lower=0, upper=100> accuracy = 0;\n  \n  # Gaussian naive bayes classifier:\n  for (i in 1:N_test) {\n    # Class prior\n    real be = bernoulli_lpmf(0 | 1 - theta);\n    real ma = bernoulli_lpmf(1 | theta);\n    # Data likelihood:\n    for (j in 1:J) {\n      be += normal_lpdf(test[i, j] | mu_benign[j], sigma_benign[j]);\n      ma += normal_lpdf(test[i, j] | mu_malign[j], sigma_malign[j]);\n    }\n    # Classification:\n    if (ma >= be) {\n      ypred[i] = 1;\n    }\n    else {\n      ypred[i] = 0;\n    }\n    if (ypred[i] == target_test[i]) {\n      accuracy += 1;\n    }\n  }\n  # Accuracy:\n  accuracy = accuracy * 100.0 / N_test;\n}\n"
+\end{verbatim}
+
+\hypertarget{how-stan-code-was-run}{%
+\subsection{6. How Stan Code Was Run:}\label{how-stan-code-was-run}}
+
+\hypertarget{gaussian-naive-bayes-classifier-2}{%
+\paragraph{Gaussian Naive Bayes
+Classifier:}\label{gaussian-naive-bayes-classifier-2}}
+
+\begin{itemize}
+\tightlist
+\item
+  The experiment was run with 2000 iterations and 4 chains.
+\end{itemize}
+
+\hypertarget{convergence-diagnostics}{%
+\subsection{7. Convergence Diagnostics:}\label{convergence-diagnostics}}
+
+\hypertarget{gaussian-naive-bayes-classifier-3}{%
+\paragraph{Gaussian Naive Bayes
+Classifier:}\label{gaussian-naive-bayes-classifier-3}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Get the summary of Rhat and n\_eff:}
+\NormalTok{s \textless{}{-}}\StringTok{ }\KeywordTok{as.data.frame}\NormalTok{(}\KeywordTok{summary}\NormalTok{(fit)}\OperatorTok{$}\NormalTok{summary[}\DecValTok{1}\OperatorTok{:}\DecValTok{121}\NormalTok{, ])}
+\NormalTok{rhat \textless{}{-}}\StringTok{ }\NormalTok{s}\OperatorTok{$}\NormalTok{Rhat}
+\NormalTok{n\_eff \textless{}{-}}\StringTok{ }\NormalTok{s}\OperatorTok{$}\NormalTok{n\_eff}
+\CommentTok{\# Plot histogram of Rhat:}
+\KeywordTok{hist}\NormalTok{(rhat, }\DataTypeTok{main =} \StringTok{"Rhat (Convergence)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Project_files/figure-latex/unnamed-chunk-4-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Plot histogram of n\_eff:}
+\KeywordTok{hist}\NormalTok{(n\_eff, }\DataTypeTok{main =} \StringTok{"N\_eff (Efficiency)"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Project_files/figure-latex/unnamed-chunk-4-2.pdf} -
+From the above plot, most of the \(\hat{R}\) are close very close to 1,
+meaning that the simulation chains converged to the target distribution,
+and futher simulation will not improve the between-within variance of
+MCMC chains.\\
+- As shown from the histogram of number of effective sample size, most
+of the \(N_{eff}\) are larger than the actual sample size \(N = 4000\).
+This means that the posterior draws in the chains are approximately
+independent of each other, which also indicates convergence in the
+simulation.
+
+\hypertarget{posterior-predictive-check}{%
+\subsection{8. Posterior Predictive
+Check:}\label{posterior-predictive-check}}
+
+\hypertarget{gaussian-naive-bayes-classifier-4}{%
+\paragraph{Gaussian Naive Bayes
+Classifier:}\label{gaussian-naive-bayes-classifier-4}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Get all parameters:}
+\NormalTok{J \textless{}{-}}\StringTok{ }\KeywordTok{ncol}\NormalTok{(benign)}
+\NormalTok{posterior\_mean \textless{}{-}}\StringTok{ }\KeywordTok{get\_posterior\_mean}\NormalTok{(fit)}
+\NormalTok{mu\_benign \textless{}{-}}\StringTok{ }\NormalTok{posterior\_mean[}\DecValTok{1}\OperatorTok{:}\NormalTok{J, }\DecValTok{5}\NormalTok{]}
+\NormalTok{sigma\_benign \textless{}{-}}\StringTok{ }\NormalTok{posterior\_mean[(J}\OperatorTok{+}\DecValTok{1}\NormalTok{)}\OperatorTok{:}\NormalTok{(}\DecValTok{2}\OperatorTok{*}\NormalTok{J), }\DecValTok{5}\NormalTok{]}
+\NormalTok{mu\_malign \textless{}{-}}\StringTok{ }\NormalTok{posterior\_mean[(}\DecValTok{2}\OperatorTok{*}\NormalTok{J}\OperatorTok{+}\DecValTok{1}\NormalTok{)}\OperatorTok{:}\NormalTok{(}\DecValTok{3}\OperatorTok{*}\NormalTok{J), }\DecValTok{5}\NormalTok{]}
+\NormalTok{sigma\_malign \textless{}{-}}\StringTok{ }\NormalTok{posterior\_mean[(}\DecValTok{3}\OperatorTok{*}\NormalTok{J}\OperatorTok{+}\DecValTok{1}\NormalTok{)}\OperatorTok{:}\NormalTok{(}\DecValTok{4}\OperatorTok{*}\NormalTok{J), }\DecValTok{5}\NormalTok{]}
+\NormalTok{theta \textless{}{-}}\StringTok{ }\NormalTok{posterior\_mean[}\DecValTok{121}\NormalTok{, }\DecValTok{5}\NormalTok{]}
+
+\CommentTok{\# Define some helper function:}
+\NormalTok{ppc\_benign \textless{}{-}}\StringTok{ }\ControlFlowTok{function}\NormalTok{(j) \{}
+  \KeywordTok{ppc\_dens\_overlay}\NormalTok{(benign[, j], }\KeywordTok{matrix}\NormalTok{(}\KeywordTok{rnorm}\NormalTok{(}\DecValTok{100}\OperatorTok{*}\KeywordTok{nrow}\NormalTok{(benign), mu\_benign[j], sigma\_benign[j]), }\DataTypeTok{ncol=}\KeywordTok{nrow}\NormalTok{(benign)))}
+\NormalTok{\}}
+\NormalTok{ppc\_malign \textless{}{-}}\StringTok{ }\ControlFlowTok{function}\NormalTok{(j) \{}
+  \KeywordTok{ppc\_dens\_overlay}\NormalTok{(malign[, j], }\KeywordTok{matrix}\NormalTok{(}\KeywordTok{rnorm}\NormalTok{(}\DecValTok{100}\OperatorTok{*}\KeywordTok{nrow}\NormalTok{(malign), mu\_malign[j], sigma\_malign[j]), }\DataTypeTok{ncol=}\KeywordTok{nrow}\NormalTok{(malign)))}
+\NormalTok{\}}
+\CommentTok{\# Graphical posterior predictive check:}
+\KeywordTok{grid.arrange}\NormalTok{(}\DataTypeTok{grobs=}\KeywordTok{lapply}\NormalTok{(}\DecValTok{1}\OperatorTok{:}\DecValTok{12}\NormalTok{, ppc\_benign), }\DataTypeTok{nrow=}\DecValTok{3}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Project_files/figure-latex/unnamed-chunk-5-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\KeywordTok{grid.arrange}\NormalTok{(}\DataTypeTok{grobs=}\KeywordTok{lapply}\NormalTok{(}\DecValTok{1}\OperatorTok{:}\DecValTok{12}\NormalTok{, ppc\_malign), }\DataTypeTok{nrow=}\DecValTok{3}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{Project_files/figure-latex/unnamed-chunk-5-2.pdf} -
+Regarding the display issue, only a subset of posterior distribution are
+shown for posterior predictive check, but the same analysis appies for
+the others.\\
+- As shown from the plot, almost all of the replicate distribution are
+similar to the target distribution, meaning that the model fit to the
+data quite well.
+
+\hypertarget{model-comparision}{%
+\subsection{9. Model Comparision:}\label{model-comparision}}
+
+\hypertarget{predictive-performance-assessment}{%
+\subsection{10. Predictive Performance
+Assessment:}\label{predictive-performance-assessment}}
+
+\hypertarget{gaussian-naive-bayes-classifier-5}{%
+\paragraph{Gaussian Naive Bayes
+Classifier:}\label{gaussian-naive-bayes-classifier-5}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# Extract GNBC accuracy from the stan model:}
+\NormalTok{s \textless{}{-}}\StringTok{ }\KeywordTok{as.data.frame}\NormalTok{(}\KeywordTok{summary}\NormalTok{(fit)}\OperatorTok{$}\NormalTok{summary)}
+\KeywordTok{cat}\NormalTok{(}\StringTok{"Accuracy of the model on test dataset: "}\NormalTok{, s[}\KeywordTok{nrow}\NormalTok{(s)}\OperatorTok{{-}}\DecValTok{1}\NormalTok{,}\DecValTok{1}\NormalTok{], }\StringTok{"\%"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Accuracy of the model on test dataset:  94.65044 %
+\end{verbatim}
+
+\begin{itemize}
+\tightlist
+\item
+  The GNBC achieve 94.7\% predictive accuracy on test dataset containing
+  half of the total samples. This is quite satisfactory performance
+  given a simple model like GNBC. The performance could be improved if
+  the dependency between variables is also taken into account. This
+  definitely requires a more sophisticated model within the family of
+  Bayesian classifier, which will be studied in future work.
+\end{itemize}
+
+\hypertarget{sensitivity-analysis-w.r.t-prior-choices}{%
+\subsection{11. Sensitivity Analysis w.r.t Prior
+Choices:}\label{sensitivity-analysis-w.r.t-prior-choices}}
+
+\hypertarget{discussion-of-issues-potential-improvements}{%
+\subsection{12. Discussion of Issues \& Potential
+Improvements:}\label{discussion-of-issues-potential-improvements}}
+
+\hypertarget{conclusion}{%
+\subsection{13. Conclusion:}\label{conclusion}}
+
+\end{document}

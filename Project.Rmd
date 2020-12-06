@@ -1,0 +1,168 @@
+---
+title: "BDA - Assignment 8"
+author: "Anonymous"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 1
+  html_document:
+    toc: yes
+    toc_depth: '1'
+    df_print: paged
+---
+
+```{r include=FALSE}
+install.packages("remotes")
+install.packages("egg")
+remotes::install_github("avehtari/BDA_course_Aalto",
+subdir = "rpackage", upgrade="never")
+library(aaltobda)
+library(rstan)
+library(ggplot2)
+library(egg)
+library(bayesplot)
+options(warn=-1)
+if (!require(devtools)) {
+  install.packages("devtools")
+}
+devtools::install_github("stan-dev/loo", build_vignettes = FALSE)
+options(mc.cores = parallel::detectCores())
+options(max.print = 99999999)
+set.seed(42)
+```
+
+## 1. Introduction:   
+#### Motivation:   
+- Breast cancer is one of the most common cancer in women around the world. According to American Cancer Society, about 1 in 8 US women will develop breast cancer in their life time. Furthermore, breast cancer is the second leading cause of cancer death in women. The death rate due to breast cancer in women younger than 50 have been steady since 2007. However, this rate for older women decreased by 1.3% per year from 2013 to 2017.
+- This shows the importance of early detection of breast cancer in protecting health of women. Early detection can help physicians and women themselves reduce the health risk and live a happier lives, not to mention that they can save money from cancer treatment.    
+
+#### Problem:   
+- Medical screenings are usually done by one doctor, which could be prone to errors and bias. Assessment from multiple doctors usually yields more reliable diagnosis, but this could be impractical in some cases when there is a shortage of doctor with the desired skills and experience.    
+- A computer program for automatic diagnosis of breast cancer could provide a solution to that issue. By providing prediction from data collected from fine-needle aspirate of breast mass, such program can help doctors in finalizing their diagnosis and planning better treatments for their patients.   
+
+#### Modeling Idea:   
+- The problem is classifying fine-needle aspirate of breast mass as benign or malignant, which can be modeled as binary classification problem. In this study, Gaussian Naive Bayes Classifier and Logistic Regression will be employed for this task. These two models have been shown to be very effective in many cases, even with their simple architectures.    
+
+## 2. Data Description:    
+
+## 3. Model Description:   
+
+
+
+## 4. Justification of Prior Choice:   
+
+## 5. Stan Code:   
+```{r}
+"
+data {
+  int<lower=0> J;                        // Number of feautures
+  int<lower=0> N;                        // Number of instances
+  int<lower=0> N_test;                        // Number of test instances
+  int<lower=0> N_benign;                 // Number of benign instances
+  int<lower=0> N_malign;                 // Number of malign instances
+  int<lower=0, upper=1> target_train[N];        // Target
+  int<lower=0, upper=1> target_test[N_test];        // Target
+  vector[J] benign[N_benign];            // Benign data
+  vector[J] malign[N_malign];            // Malignant data
+  vector[J] test[N_test];
+  
+}
+
+parameters {
+  // Benign Parameters:
+  vector[J] mu_benign;
+  vector<lower=0>[J] sigma_benign;
+  // Malignant Parameters:
+  vector[J] mu_malign;
+  vector<lower=0>[J] sigma_malign;
+  // Target Parameters:
+  real<lower=0, upper=1> theta;
+}
+
+model {
+  // Prior:
+  theta ~ beta(10, 10);
+  
+  for (j in 1:J) {
+    mu_benign[j] ~ normal(20, 100);
+    sigma_benign[j] ~ inv_chi_square(0.1);
+    mu_malign[j] ~ normal(20, 100);
+    sigma_malign[j] ~ inv_chi_square(0.1);
+  }
+  
+  // Likelihood:
+  target_train ~ bernoulli(theta);
+  
+  for (j in 1:J) {
+    benign[, j] ~ normal(mu_benign[j], sigma_benign[j]);
+    malign[, j] ~ normal(mu_malign[j], sigma_malign[j]);
+  }
+}
+
+generated quantities {
+  int<lower=0, upper=1> ypred[N_test];
+  real<lower=0, upper=100> accuracy = 0;
+  
+  # Gaussian naive bayes classifier:
+  for (i in 1:N_test) {
+    # Class prior
+    real be = bernoulli_lpmf(0 | 1 - theta);
+    real ma = bernoulli_lpmf(1 | theta);
+    # Data likelihood:
+    for (j in 1:J) {
+      be += normal_lpdf(test[i, j] | mu_benign[j], sigma_benign[j]);
+      ma += normal_lpdf(test[i, j] | mu_malign[j], sigma_malign[j]);
+    }
+    # Classification:
+    if (ma >= be) {
+      ypred[i] = 1;
+    }
+    else {
+      ypred[i] = 0;
+    }
+    if (ypred[i] == target_test[i]) {
+      accuracy += 1;
+    }
+  }
+  # Accuracy:
+  accuracy = accuracy * 100.0 / N_test;
+}
+"
+```
+
+## 6. How Stan Code Was Run:   
+#### Gaussian Naive Bayes Classifier:
+- The experiment was run with 2000 iterations and 4 chains.    
+
+## 7. Convergence Diagnostics:    
+
+##
+
+## 8. Posterior Predictive Check:  
+##
+
+## 9. Model Comparision:    
+```{r}
+
+```
+
+
+## 10. Predictive Performance Assessment:   
+##
+
+## 11. Sensitivity Analysis w.r.t Prior Choices:    
+
+
+## 12. Discussion of Issues & Potential Improvements:    
+
+
+## 13. Conclusion:     
+```{r}
+
+```
+
+
+
+
+
+
