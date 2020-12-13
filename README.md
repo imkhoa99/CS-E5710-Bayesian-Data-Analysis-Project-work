@@ -1,6 +1,4 @@
 # CS-E5710 Bayesian Data Analysis - Project work
-## Project Description
-This is the final project for the course CS-E5710 Bayesian Data Analysis at Aalto University.
 ## Motivation
 - Breast cancer is one of the most common cancer in women around the world. According to American Cancer
 Society, about 1 in 8 US women will develop breast cancer in their life time. 
