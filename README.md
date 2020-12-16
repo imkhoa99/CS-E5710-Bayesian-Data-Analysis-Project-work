@@ -34,8 +34,7 @@ There are 10 real-valued features that are computed for each cell nucleus:
 - **symmetry**
 - **fractal dimension** (“coastline approximation” - 1)
 
-The target variable is to predict whether a person having breast cancer given the attributes. (0: not cancer,
-1: cancer).
+The target variable is to classify what is the diagnosis of breast tissues (0: malignant, 1: benign) given the available attributes.
 
 ## Report
 [Data Analysis Report](https://github.com/imkhoa99/CS-E5710-Bayesian-Data-Analysis-Project-work/blob/main/project_khoa.pdf)
